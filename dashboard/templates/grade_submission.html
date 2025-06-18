@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Grade Submission{% endblock %}
+{% block page_title %}Grade Submission{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-edit me-2"></i>Grade Submission
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Student Information</h6>
+                        <p><strong>Name:</strong> {{ submission.student.full_name }}</p>
+                        <p><strong>Student ID:</strong> {{ submission.student.student_id }}</p>
+                        <p><strong>Email:</strong> {{ submission.student.email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Task Information</h6>
+                        <p><strong>Task:</strong> {{ submission.task.title }}</p>
+                        <p><strong>Difficulty:</strong> {{ submission.task.difficulty|title }}</p>
+                        <p><strong>Submitted:</strong> {{ submission.submitted_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6>Student Code</h6>
+                    <div class="bg-dark text-light p-3 rounded" style="max-height: 300px; overflow-y: auto;">
+                        <pre style="margin: 0; font-family: 'Courier New', monospace; font-size: 13px;">{{ submission.code }}</pre>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="score" class="form-label">Score (0-100)</label>
+                            <input type="number" class="form-control" id="score" name="score" 
+                                   min="0" max="100" value="{{ submission.score|default:'' }}" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-control" id="status" name="status" required>
+                                <option value="pending" {% if submission.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="submitted" {% if submission.status == 'submitted' %}selected{% endif %}>Submitted</option>
+                                <option value="completed" {% if submission.status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="failed" {% if submission.status == 'failed' %}selected{% endif %}>Failed</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Time Taken</label>
+                            <div class="form-control-plaintext">
+                                {% if submission.time_taken %}
+                                    {{ submission.time_taken }} seconds
+                                {% else %}
+                                    Not recorded
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="feedback" class="form-label">Feedback</label>
+                        <textarea class="form-control" id="feedback" name="feedback" rows="4" 
+                                  placeholder="Provide detailed feedback on the submission...">{{ submission.feedback|default:'' }}</textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'dashboard:view_submissions' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Submissions
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Save Grade
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-info-circle me-2"></i>Task Details
+                </h6>
+            </div>
+            <div class="card-body">
+                <h6>{{ submission.task.title }}</h6>
+                <p class="text-muted">{{ submission.task.description }}</p>
+                
+                <h6 class="mt-3">Problem Statement</h6>
+                <div class="bg-light p-3 rounded mb-3">
+                    {{ submission.task.problem_statement|linebreaks }}
+                </div>
+                
+                {% if submission.task.sample_input %}
+                <h6>Sample Input</h6>
+                <div class="bg-dark text-light p-2 rounded mb-2">
+                    <pre style="margin: 0; font-size: 12px;">{{ submission.task.sample_input }}</pre>
+                </div>
+                {% endif %}
+                
+                {% if submission.task.sample_output %}
+                <h6>Sample Output</h6>
+                <div class="bg-dark text-light p-2 rounded">
+                    <pre style="margin: 0; font-size: 12px;">{{ submission.task.sample_output }}</pre>
+                </div>
+                {% endif %}
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <strong>Language:</strong> {{ submission.language|title }}<br>
+                        <strong>Time Limit:</strong> {{ submission.task.time_limit }} minutes<br>
+                        <strong>Due Date:</strong> {{ submission.task.due_date|date:"M d, Y H:i" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

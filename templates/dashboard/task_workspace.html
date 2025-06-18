@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.title }} - Task Workspace{% endblock %}
+{% block page_title %}{{ task.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .workspace-container {
+        height: calc(100vh - 200px);
+        overflow: hidden;
+    }
+    .problem-panel {
+        height: 100%;
+        overflow-y: auto;
+        border-right: 1px solid #dee2e6;
+    }
+    .editor-panel {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .code-editor {
+        flex: 1;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        font-family: 'Courier New', monospace;
+        border: none;
+        outline: none;
+        resize: none;
+        padding: 15px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .output-panel {
+        height: 200px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0 0 8px 8px;
+        padding: 15px;
+        overflow-y: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+    }
+    .timer {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    .warning {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+    .btn-run {
+        background: #28a745;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    .btn-run:hover {
+        background: #218838;
+        color: white;
+    }
+    .btn-submit {
+        background: #dc3545;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    .btn-submit:hover {
+        background: #c82333;
+        color: white;
+    }
+    .language-selector {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="warning">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <strong>Important:</strong> Do not switch tabs or leave this page while working on the task. Your progress will be monitored.
+</div>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="timer text-center" id="timer">
+            <i class="fas fa-clock me-2"></i>
+            Time Remaining: <span id="time-display">--:--</span>
+        </div>
+    </div>
+    <div class="col-md-6 text-end">
+        <select class="language-selector me-2" id="language-selector">
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+            <option value="java">Java</option>
+            <option value="cpp">C++</option>
+        </select>
+        <button class="btn btn-run me-2" onclick="runCode()">
+            <i class="fas fa-play me-1"></i>Run Code
+        </button>
+        <button class="btn btn-submit" onclick="submitTask()">
+            <i class="fas fa-paper-plane me-1"></i>Submit
+        </button>
+    </div>
+</div>
+
+<div class="workspace-container">
+    <div class="row h-100">
+        <!-- Problem Description Panel -->
+        <div class="col-md-4 problem-panel">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-file-alt me-2"></i>Problem Description
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h5>{{ task.title }}</h5>
+                    <p class="text-muted">{{ task.description }}</p>
+                    
+                    <h6 class="mt-4">Problem Statement:</h6>
+                    <div class="bg-light p-3 rounded">
+                        {{ task.problem_statement|linebreaks }}
+                    </div>
+                    
+                    {% if task.sample_input %}
+                    <h6 class="mt-4">Sample Input:</h6>
+                    <div class="bg-dark text-light p-3 rounded">
+                        <pre>{{ task.sample_input }}</pre>
+                    </div>
+                    {% endif %}
+                    
+                    {% if task.sample_output %}
+                    <h6 class="mt-4">Sample Output:</h6>
+                    <div class="bg-dark text-light p-3 rounded">
+                        <pre>{{ task.sample_output }}</pre>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Difficulty: <span class="badge bg-{% if task.difficulty == 'easy' %}success{% elif task.difficulty == 'medium' %}warning{% else %}danger{% endif %}">{{ task.difficulty|title }}</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Code Editor Panel -->
+        <div class="col-md-8 editor-panel">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-code me-2"></i>Code Editor
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <textarea 
+                        id="code-editor" 
+                        class="code-editor w-100"
+                        placeholder="Write your code here..."
+                        spellcheck="false"
+                    >{{ submission.code|default:"" }}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Output Panel -->
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-terminal me-2"></i>Output
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="output-panel" id="output-panel">
+                    <div class="text-muted">Output will appear here when you run your code...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for submission -->
+<form id="submit-form" method="post" action="{% url 'dashboard:submit_task' task.id %}" style="display: none;">
+    {% csrf_token %}
+    <input type="hidden" id="code-input" name="code">
+    <input type="hidden" id="language-input" name="language">
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let startTime = new Date('{{ start_time|date:"c" }}');
+let timeLimit = {{ task.time_limit }} * 60; // Convert to seconds
+let timeRemaining = timeLimit;
+let timerInterval;
+let tabSwitchCount = 0;
+let isPageActive = true;
+
+// Initialize timer
+function initTimer() {
+    const elapsed = Math.floor((new Date() - startTime) / 1000);
+    timeRemaining = Math.max(0, timeLimit - elapsed);
+    updateTimerDisplay();
+    
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay();
+        
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            alert('Time is up! Your code will be automatically submitted.');
+            submitTask();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    document.getElementById('time-display').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    if (timeRemaining <= 300) { // 5 minutes warning
+        document.getElementById('timer').style.background = 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)';
+    }
+}
+
+// Tab switching detection
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        tabSwitchCount++;
+        isPageActive = false;
+        alert(`Warning: Tab switching detected! This is attempt #${tabSwitchCount}. Continued switching may result in task disqualification.`);
+    } else {
+        isPageActive = true;
+    }
+});
+
+// Prevent context menu
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Prevent keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Prevent Alt+Tab, Ctrl+Tab, F11, etc.
+    if (e.altKey || e.ctrlKey || e.key === 'F11' || e.key === 'F12') {
+        e.preventDefault();
+    }
+});
+
+// Run code function
+function runCode() {
+    const code = document.getElementById('code-editor').value;
+    const language = document.getElementById('language-selector').value;
+    const outputPanel = document.getElementById('output-panel');
+    
+    outputPanel.innerHTML = '<div class="text-muted">Running code...</div>';
+    
+    fetch('{% url "dashboard:execute_code" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            code: code,
+            language: language,
+            input: ''
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            let output = '';
+            if (data.output) {
+                output += `<div class="text-success"><strong>Output:</strong></div><pre>${data.output}</pre>`;
+            }
+            if (data.error) {
+                output += `<div class="text-danger"><strong>Error:</strong></div><pre>${data.error}</pre>`;
+            }
+            if (!data.output && !data.error) {
+                output = '<div class="text-muted">Code executed successfully with no output.</div>';
+            }
+            outputPanel.innerHTML = output;
+        } else {
+            outputPanel.innerHTML = `<div class="text-danger"><strong>Error:</strong> ${data.error}</div>`;
+        }
+    })
+    .catch(error => {
+        outputPanel.innerHTML = `<div class="text-danger"><strong>Error:</strong> ${error.message}</div>`;
+    });
+}
+
+// Submit task function
+function submitTask() {
+    if (confirm('Are you sure you want to submit your task? You cannot make changes after submission.')) {
+        const code = document.getElementById('code-editor').value;
+        const language = document.getElementById('language-selector').value;
+        
+        document.getElementById('code-input').value = code;
+        document.getElementById('language-input').value = language;
+        document.getElementById('submit-form').submit();
+    }
+}
+
+// Auto-save functionality
+function autoSave() {
+    const code = document.getElementById('code-editor').value;
+    localStorage.setItem('task_{{ task.id }}_code', code);
+    localStorage.setItem('task_{{ task.id }}_language', document.getElementById('language-selector').value);
+}
+
+// Load auto-saved code
+function loadAutoSaved() {
+    const savedCode = localStorage.getItem('task_{{ task.id }}_code');
+    const savedLanguage = localStorage.getItem('task_{{ task.id }}_language');
+    
+    if (savedCode) {
+        document.getElementById('code-editor').value = savedCode;
+    }
+    if (savedLanguage) {
+        document.getElementById('language-selector').value = savedLanguage;
+    }
+}
+
+// Initialize everything
+document.addEventListener('DOMContentLoaded', function() {
+    initTimer();
+    loadAutoSaved();
+    
+    // Auto-save every 30 seconds
+    setInterval(autoSave, 30000);
+    
+    // Auto-save on code change
+    document.getElementById('code-editor').addEventListener('input', autoSave);
+    document.getElementById('language-selector').addEventListener('change', autoSave);
+});
+
+// Warn before leaving page
+window.addEventListener('beforeunload', function(e) {
+    if (timeRemaining > 0) {
+        e.preventDefault();
+        e.returnValue = 'Are you sure you want to leave? Your progress will be lost.';
+        return 'Are you sure you want to leave? Your progress will be lost.';
+    }
+});
+</script>
+{% endblock %} 

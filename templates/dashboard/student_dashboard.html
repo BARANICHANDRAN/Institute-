@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Student Info Card -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-user me-2"></i>Student Information
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="fas fa-user-circle fa-4x text-primary"></i>
+                </div>
+                <h5 class="card-title text-center">{{ student.full_name }}</h5>
+                <p class="text-muted text-center">Student ID: {{ student.student_id }}</p>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h6 class="text-primary">{{ completed_tasks.count }}</h6>
+                        <small class="text-muted">Completed</small>
+                    </div>
+                    <div class="col-6">
+                        <h6 class="text-warning">{{ pending_tasks.count }}</h6>
+                        <small class="text-muted">Pending</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Overview -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-chart-line me-2"></i>Progress Overview
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="stats-card rounded p-3 mb-3">
+                            <h3 class="text-white">{{ active_tasks.count }}</h3>
+                            <p class="text-white-50 mb-0">Active Tasks</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="stats-card rounded p-3 mb-3">
+                            <h3 class="text-white">{{ completed_tasks.count }}</h3>
+                            <p class="text-white-50 mb-0">Completed</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="stats-card rounded p-3 mb-3">
+                            <h3 class="text-white">
+                                {% if active_tasks.count > 0 %}
+                                    {{ completed_tasks.count|floatformat:0 }}/{{ active_tasks.count }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </h3>
+                            <p class="text-white-50 mb-0">Completion Rate</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Active Tasks -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-tasks me-2"></i>Active Tasks
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if active_tasks %}
+                    <div class="row">
+                        {% for task in active_tasks %}
+                        <div class="col-lg-6 mb-3">
+                            <div class="card h-100 border-left-primary">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="card-title">{{ task.title }}</h6>
+                                            <p class="card-text text-muted">{{ task.description|truncatechars:100 }}</p>
+                                        </div>
+                                        <span class="badge bg-{% if task.difficulty == 'easy' %}success{% elif task.difficulty == 'medium' %}warning{% else %}danger{% endif %}">
+                                            {{ task.difficulty|title }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-6">
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>Time Limit: {{ task.time_limit }} min
+                                            </small>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar me-1"></i>Due: {{ task.due_date|date:"M d, Y" }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        {% for submission in pending_tasks %}
+                                            {% if submission.task == task %}
+                                                {% if submission.status == 'completed' %}
+                                                    <span class="badge bg-success">Completed</span>
+                                                {% elif submission.status == 'submitted' %}
+                                                    <span class="badge bg-warning">Submitted</span>
+                                                {% else %}
+                                                    <a href="{% url 'dashboard:start_task' task.id %}" class="btn btn-primary btn-sm">
+                                                        <i class="fas fa-play me-1"></i>Start Task
+                                                    </a>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% empty %}
+                                            <a href="{% url 'dashboard:start_task' task.id %}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-play me-1"></i>Start Task
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No active tasks available</h5>
+                        <p class="text-muted">Check back later for new assignments.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Recent Submissions -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-history me-2"></i>Recent Submissions
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if completed_tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                    <th>Time Taken</th>
+                                    <th>Score</th>
+                                    <th>Feedback</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for submission in completed_tasks|slice:":5" %}
+                                <tr>
+                                    <td>{{ submission.task.title }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if submission.status == 'completed' %}success{% elif submission.status == 'submitted' %}warning{% else %}danger{% endif %}">
+                                            {{ submission.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ submission.submitted_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if submission.time_taken %}
+                                            {{ submission.time_taken }}s
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if submission.score %}
+                                            {{ submission.score }}/100
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if submission.feedback %}
+                                            <span class="text-muted">{{ submission.feedback|truncatechars:30 }}</span>
+                                        {% else %}
+                                            <span class="text-muted">No feedback yet</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No submissions yet</h5>
+                        <p class="text-muted">Start working on tasks to see your submissions here.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
