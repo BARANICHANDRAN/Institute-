@@ -26,7 +26,9 @@ SECRET_KEY = 'django-insecure-ox3ozqnzg97&)=gnn3+yjo2=fxf5xwpc@b+@73+$nl^1z9i9fv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'https://institute-fbrx.onrender.com',
+]
 
 
 # Application definition
