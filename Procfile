@@ -1,1 +1,1 @@
-web: gunicorn institute_project.wsgi application
+web: gunicorn institute_project.wsgi:application
