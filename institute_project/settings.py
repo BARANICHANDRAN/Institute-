@@ -28,6 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'https://institute-fbrx.onrender.com',
+    'besant-technologies.up.railway.app',
     '127.0.0.1',
     'localhost',
 ]
