@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Students List - Admin Dashboard{% endblock %}
+{% block title %}Students List - Besant Technologies Admin Portal{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -140,6 +140,7 @@
                                         <th>Phone</th>
                                         <th>Status</th>
                                         <th>Joined Date</th>
+                                        <th>Course</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -174,6 +175,7 @@
                                             {% endif %}
                                         </td>
                                         <td>{{ student.created_at|date:"M d, Y" }}</td>
+                                        <td>{{ student.get_course_display }}</td>
                                         <td>
                                             <div class="btn-group" role="group">
                                                 <a href="{% url 'dashboard:student_detail' student.id %}" 
@@ -235,7 +237,7 @@
             <!-- Back to Dashboard -->
             <div class="mt-3">
                 <a href="{% url 'dashboard:admin_dashboard' %}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    <i class="fas fa-arrow-left"></i> Back to Besant Technologies Admin Portal
                 </a>
             </div>
         </div>

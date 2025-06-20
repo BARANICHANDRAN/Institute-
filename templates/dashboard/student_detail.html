@@ -12,7 +12,7 @@
                     <h2><i class="fas fa-user"></i> Student Details</h2>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{% url 'dashboard:admin_dashboard' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'dashboard:admin_dashboard' %}">Besant Technologies Admin Portal</a></li>
                             <li class="breadcrumb-item"><a href="{% url 'dashboard:list_students' %}">Students</a></li>
                             <li class="breadcrumb-item active">{{ student.full_name }}</li>
                         </ol>
@@ -77,6 +77,10 @@
                                         <tr>
                                             <td><strong>Last Updated:</strong></td>
                                             <td>{{ student.updated_at|date:"F d, Y" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Course:</strong></td>
+                                            <td>{{ student.get_course_display }}</td>
                                         </tr>
                                     </table>
                                 </div>

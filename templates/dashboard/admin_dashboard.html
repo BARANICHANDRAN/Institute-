@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Dashboard{% endblock %}
-{% block page_title %}Admin Dashboard{% endblock %}
+{% block title %}Besant Technologies Admin Portal{% endblock %}
+{% block page_title %}Besant Technologies Admin Portal{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -92,6 +92,7 @@
                                 <th>Student ID</th>
                                 <th>Name</th>
                                 <th>Email</th>
+                                <th>Course</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -101,6 +102,7 @@
                                 <td>{{ student.student_id }}</td>
                                 <td>{{ student.full_name }}</td>
                                 <td>{{ student.email }}</td>
+                                <td>{{ student.get_course_display }}</td>
                                 <td>
                                     {% if student.is_active %}
                                         <span class="badge bg-success">Active</span>

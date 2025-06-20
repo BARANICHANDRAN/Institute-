@@ -52,7 +52,7 @@ def dashboard_home(request):
 @user_passes_test(is_admin)
 def admin_dashboard(request):
     students = Student.objects.filter(is_active=True)
-    tasks = Task.objects.filter(is_active=True)
+    tasks = Task.objects.filter(is_active=True).order_by('-created_at')
     recent_submissions = TaskSubmission.objects.all().order_by('-submitted_at')[:10]
     
     context = {
@@ -70,7 +70,8 @@ def admin_dashboard(request):
 def student_dashboard(request):
     try:
         student = request.user.student
-        active_tasks = Task.objects.filter(is_active=True, due_date__gte=timezone.now())
+        completed_task_ids = TaskSubmission.objects.filter(student=student, status='completed').values_list('task_id', flat=True)
+        active_tasks = Task.objects.filter(is_active=True, due_date__gte=timezone.now()).exclude(id__in=completed_task_ids).order_by('due_date')
         completed_tasks = TaskSubmission.objects.filter(student=student, status='completed')
         pending_tasks = TaskSubmission.objects.filter(student=student, status='pending')
         
@@ -92,27 +93,28 @@ def add_student(request):
         form = StudentForm(request.POST)
         if form.is_valid():
             student = form.save(commit=False)
-            # Create user account for student
             username = f"student_{student.student_id}"
-            password = f"pass_{student.student_id}"
-            user = User.objects.create_user(
-                username=username,
-                email=student.email,
-                password=password,
-                first_name=student.full_name.split()[0] if student.full_name else '',
-                last_name=' '.join(student.full_name.split()[1:]) if len(student.full_name.split()) > 1 else ''
-            )
-            student.user = user
-            student.save()
-            
-            # Create user profile
-            UserProfile.objects.create(user=user, user_type='student')
-            
-            messages.success(request, f'Student {student.full_name} added successfully!')
-            return redirect('dashboard:admin_dashboard')
+            if User.objects.filter(username=username).exists():
+                form.add_error('student_id', 'A user with this student ID already exists.')
+            else:
+                name_part = (student.full_name[:3].upper())
+                dob_part = student.date_of_birth.strftime('%d')
+                phone_part = student.phone[7:]
+                password = f"{name_part}{dob_part}{phone_part}"
+                user = User.objects.create_user(
+                    username=username,
+                    email=student.email,
+                    password=password,
+                    first_name=student.full_name.split()[0] if student.full_name else '',
+                    last_name=' '.join(student.full_name.split()[1:]) if len(student.full_name.split()) > 1 else ''
+                )
+                student.user = user
+                student.save()
+                UserProfile.objects.create(user=user, user_type='student')
+                messages.success(request, f'Student {student.full_name} added successfully!')
+                return redirect('dashboard:admin_dashboard')
     else:
         form = StudentForm()
-    
     return render(request, 'dashboard/add_student.html', {'form': form})
 
 @login_required
@@ -159,8 +161,13 @@ def start_task(request, task_id):
     submission, created = TaskSubmission.objects.get_or_create(
         student=student,
         task=task,
-        defaults={'status': 'pending'}
+        defaults={'status': 'pending', 'code': ''}
     )
+    
+    # Always clear the code if the task is being started (not completed)
+    if submission.status != 'completed' and submission.code:
+        submission.code = ''
+        submission.save(update_fields=['code'])
     
     if submission.status == 'completed':
         messages.warning(request, 'You have already completed this task.')

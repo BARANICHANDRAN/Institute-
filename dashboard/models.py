@@ -10,6 +10,15 @@ class Student(models.Model):
     phone = models.CharField(max_length=15, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     address = models.TextField(blank=True, null=True)
+    COURSE_CHOICES = [
+        ('FS', 'Full Stack'),
+        ('JAVA', 'JAVA'),
+        ('PY', 'Python'),
+        ('TEST', 'Testing'),
+        ('CC', 'Cloud Computing'),
+        ('AI', 'Artificial Intelligence'),
+    ]
+    course = models.CharField(max_length=20, choices=COURSE_CHOICES, default='bca')
     enrollment_date = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)
     

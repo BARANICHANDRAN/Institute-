@@ -56,10 +56,14 @@
                 </div>
                 {% endif %}
 
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Important:</strong> Once you start the task, you cannot switch tabs or leave the page. Make sure you're ready to begin.
+                {% if submission.code %}
+                <div class="mb-4">
+                    <h6>Submitted Code</h6>
+                    <div class="bg-dark text-light p-3 rounded">
+                        <pre style="margin: 0; font-family: 'Courier New', monospace; white-space: pre-wrap;">{{ submission.code }}</pre>
+                    </div>
                 </div>
+                {% endif %}
 
                 <div class="d-flex justify-content-between">
                     <a href="{% url 'dashboard:student_dashboard' %}" class="btn btn-secondary">

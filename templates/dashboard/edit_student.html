@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Edit {{ student.full_name }} - Admin Dashboard{% endblock %}
+{% block title %}Edit {{ student.full_name }} - Besant Technologies Admin Portal{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -12,7 +12,7 @@
                     <h2><i class="fas fa-edit"></i> Edit Student</h2>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="{% url 'dashboard:admin_dashboard' %}">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'dashboard:admin_dashboard' %}">Besant Technologies Admin Portal</a></li>
                             <li class="breadcrumb-item"><a href="{% url 'dashboard:list_students' %}">Students</a></li>
                             <li class="breadcrumb-item"><a href="{% url 'dashboard:student_detail' student.id %}">{{ student.full_name }}</a></li>
                             <li class="breadcrumb-item active">Edit</li>
