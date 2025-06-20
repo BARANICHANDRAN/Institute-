@@ -28,8 +28,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'https://institute-fbrx.onrender.com',
+<<<<<<< HEAD
     '127.0.0.1',
     'localhost',
+=======
+>>>>>>> 3e4f9535082bcffa6035ec16c460f5aa3c449006
 ]
 
 
