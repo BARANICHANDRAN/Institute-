@@ -1,33 +1,24 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from dashboard.models import UserProfile
+from dashboard.models import UserProfile, Student, Task, TaskSubmission
 
 class Command(BaseCommand):
-    help = 'Setup admin user profile'
+    help = 'Clear all users except admin_besant and related data.'
 
     def handle(self, *args, **options):
+        # Keep only the admin user
+        admin_username = 'admin_besant'
         try:
-            # Get the admin user
-            admin_user = User.objects.get(username='admin_besant')
-            
-            # Create or update user profile
-            profile, created = UserProfile.objects.get_or_create(
-                user=admin_user,
-                defaults={'user_type': 'admin'}
-            )
-            
-            if created:
-                self.stdout.write(
-                    self.style.SUCCESS('Successfully created admin profile for admin_besant')
-                )
-            else:
-                profile.user_type = 'admin'
-                profile.save()
-                self.stdout.write(
-                    self.style.SUCCESS('Successfully updated admin profile for admin_besant')
-                )
-                
+            admin_user = User.objects.get(username=admin_username)
         except User.DoesNotExist:
-            self.stdout.write(
-                self.style.ERROR('Admin user "admin_besant" not found. Please create a superuser first.')
-            ) 
+            self.stdout.write(self.style.ERROR(f'Admin user "{admin_username}" not found.'))
+            return
+
+        # Delete all other users and their profiles
+        UserProfile.objects.exclude(user=admin_user).delete()
+        Student.objects.all().delete()
+        TaskSubmission.objects.all().delete()
+        Task.objects.all().delete()
+        User.objects.exclude(username=admin_username).delete()
+
+        self.stdout.write(self.style.SUCCESS('Database cleared except for admin user and profile.')) 
