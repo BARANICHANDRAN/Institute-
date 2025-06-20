@@ -33,7 +33,12 @@ ALLOWED_HOSTS = [
     'localhost',
 ]
 
-
+CSRF_TRUSTED_ORIGINS = [
+    'https://institute-fbrx.onrender.com',
+    'besant-technologies.up.railway.app',
+    '127.0.0.1',
+    'localhost',
+]
 # Application definition
 
 INSTALLED_APPS = [
