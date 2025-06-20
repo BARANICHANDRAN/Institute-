@@ -36,8 +36,6 @@ ALLOWED_HOSTS = [
 CSRF_TRUSTED_ORIGINS = [
     'https://institute-fbrx.onrender.com',
     'https://besant-technologies.up.railway.app',
-    '127.0.0.1',
-    'localhost',
 ]
 # Application definition
 
