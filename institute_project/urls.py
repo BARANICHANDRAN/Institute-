@@ -4,6 +4,8 @@ from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect
 from django.views.generic import RedirectView
 from django.contrib.auth import logout
+from django.conf import settings
+from django.conf.urls.static import static
 
 def custom_logout(request):
     """Custom logout view that accepts GET requests"""
@@ -31,3 +33,7 @@ urlpatterns = [
     # Institute Dashboard URLs
     path('institute/', include('dashboard.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
