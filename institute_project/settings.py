@@ -27,12 +27,18 @@ SECRET_KEY = 'django-insecure-ox3ozqnzg97&)=gnn3+yjo2=fxf5xwpc@b+@73+$nl^1z9i9fv
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'https://institute-fbrx.onrender.com',
+    'institute-fbrx.onrender.com',
+    'besant-technologies.up.railway.app',
     '127.0.0.1',
     'localhost',
 ]
 
-
+CSRF_TRUSTED_ORIGINS = [
+    'https://institute-fbrx.onrender.com',
+    'https://besant-technologies.up.railway.app',
+    '127.0.0.1',
+    'localhost',
+]
 # Application definition
 
 INSTALLED_APPS = [
